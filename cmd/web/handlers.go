@@ -20,28 +20,26 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	// base.tmpl.html file must be the *first* file in the slice.
 	files := []string{
 		"./ui/html/pages/base.tmpl.html",
-		"./ui/html/pages/home.tmpl.html",
+		"./ui/html/pages/home.tmpld.html",
 		"./ui/html/partials/nav.tmpl.html",
 	}
 	ts, err := template.ParseFiles(files...)
 	if err != nil {
-		app.logger.Error(err.Error())
-		http.Error(w, "internal server error", http.StatusInternalServerError)
+		app.serverError(w, r, err)
 		return
 	}
 	// Use ExecuteTemplate() method to write the "base" template content as the
 	// response body.
 	err = ts.ExecuteTemplate(w, "base", nil)
 	if err != nil {
-		app.logger.Error(err.Error())
-		http.Error(w, "internal server error", http.StatusInternalServerError)
+		app.serverError(w, r, err)
 	}
 }
 
 func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(r.URL.Query().Get("id"))
 	if err != nil || id < 1 {
-		http.NotFound(w, r)
+		app.notFound(w)
 		return
 	}
 	fmt.Fprintf(w, "Display a specific snippet with id: %d", id)
@@ -51,7 +49,7 @@ func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
 	// Only allow POST method, otherwise return 405 Method Not Allowed.
 	if r.Method != "POST" {
 		w.Header().Set("Allow", http.MethodPost)
-		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		app.clientError(w, http.StatusMethodNotAllowed)
 		return
 	}
 	w.Write([]byte("Create a new snippet"))
