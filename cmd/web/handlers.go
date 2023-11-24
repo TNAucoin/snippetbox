@@ -20,7 +20,7 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	// base.tmpl.html file must be the *first* file in the slice.
 	files := []string{
 		"./ui/html/pages/base.tmpl.html",
-		"./ui/html/pages/home.tmpld.html",
+		"./ui/html/pages/home.tmpl.html",
 		"./ui/html/partials/nav.tmpl.html",
 	}
 	ts, err := template.ParseFiles(files...)
