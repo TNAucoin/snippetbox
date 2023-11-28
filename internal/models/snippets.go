@@ -64,6 +64,38 @@ func (m *SnippetModel) Get(id int) (Snippet, error) {
 }
 
 // Latest will return the 10 most recently created snippets.
-func (m *SnippetModel) Latest() ([]*Snippet, error) {
-	return nil, nil
+func (m *SnippetModel) Latest() ([]Snippet, error) {
+	stmt := `SELECT id, title, content, created, expires FROM snippets
+			 WHERE expires > UTC_TIMESTAMP() ORDER BY created DESC LIMIT 10`
+	// Returns a sql.Rows pointer which acts as an iterator over the returned
+	// records.
+	rows, err := m.DB.Query(stmt)
+	if err != nil {
+		return nil, err
+	}
+	// We defer rows.Close() to ensure the sql.Rows resultset is always properly
+	// closed before the Latest() method returns. This defer statement should come
+	// *after* you check for an error from the Query() method. Otherwise, if Query()
+	// returns an error, you'll get a panic trying to close a nil resultset.
+	defer rows.Close()
+	// Initialize an empty slice to hold the models.Snippets objects.
+	var snippets []Snippet
+	// Use rows.Next to iterate through the rows in the resultset.
+	for rows.Next() {
+		// Create a pointer to a new zeroed Snippet struct.
+		var s Snippet
+		// Use rows.Scan() to copy the values from each field in the row
+		err = rows.Scan(&s.ID, &s.Title, &s.Content, &s.Created, &s.Expires)
+		if err != nil {
+			return nil, err
+		}
+		snippets = append(snippets, s)
+	}
+
+	// Call rows.Err() to retrieve any error that was encountered during iteration.
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+	// If everything went OK, then return the Snippets slice.
+	return snippets, nil
 }
