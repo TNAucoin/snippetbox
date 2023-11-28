@@ -4,13 +4,15 @@ import (
 	"database/sql"
 	"flag"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/tnaucoin/snippetbox/internal/models"
 	"log/slog"
 	"net/http"
 	"os"
 )
 
 type application struct {
-	logger *slog.Logger
+	logger   *slog.Logger
+	snippets *models.SnippetModel
 }
 
 func main() {
@@ -32,7 +34,8 @@ func main() {
 	defer db.Close()
 	// Initialize a new instance of application containing the dependencies.
 	app := &application{
-		logger: logger,
+		logger:   logger,
+		snippets: &models.SnippetModel{DB: db},
 	}
 
 	logger.Info("starting server", "addr", *addr)
