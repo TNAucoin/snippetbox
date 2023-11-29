@@ -5,14 +5,16 @@ import (
 	"flag"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/tnaucoin/snippetbox/internal/models"
+	"html/template"
 	"log/slog"
 	"net/http"
 	"os"
 )
 
 type application struct {
-	logger   *slog.Logger
-	snippets *models.SnippetModel
+	logger        *slog.Logger
+	snippets      *models.SnippetModel
+	templateCache map[string]*template.Template
 }
 
 func main() {
@@ -30,12 +32,20 @@ func main() {
 		logger.Error(err.Error())
 		os.Exit(1)
 	}
+	// Initialize a new template cache...
+	templateCache, err := newTemplateCache()
+	if err != nil {
+		logger.Error(err.Error())
+		os.Exit(1)
+	}
 	// Defer a call to db.Close() so that the connection pool is closed before the
 	defer db.Close()
+
 	// Initialize a new instance of application containing the dependencies.
 	app := &application{
-		logger:   logger,
-		snippets: &models.SnippetModel{DB: db},
+		logger:        logger,
+		snippets:      &models.SnippetModel{DB: db},
+		templateCache: templateCache,
 	}
 
 	logger.Info("starting server", "addr", *addr)

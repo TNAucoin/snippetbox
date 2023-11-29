@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/tnaucoin/snippetbox/internal/models"
-	"html/template"
 	"net/http"
 	"strconv"
 )
@@ -25,27 +24,8 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 		app.serverError(w, r, err)
 		return
 	}
-	// Load snippets into templateData struct for use in template.
-	data := templateData{Snippets: snippets}
 
-	// Init a slice containing the paths to the two files. Note that the
-	// base.tmpl.html file must be the *first* file in the slice.
-	files := []string{
-		"./ui/html/pages/base.tmpl.html",
-		"./ui/html/pages/home.tmpl.html",
-		"./ui/html/partials/nav.tmpl.html",
-	}
-	ts, err := template.ParseFiles(files...)
-	if err != nil {
-		app.serverError(w, r, err)
-		return
-	}
-	// Use ExecuteTemplate() method to write the "base" template content as the
-	// response body.
-	err = ts.ExecuteTemplate(w, "base", data)
-	if err != nil {
-		app.serverError(w, r, err)
-	}
+	app.render(w, r, http.StatusOK, "home.tmpl.html", templateData{Snippets: snippets})
 }
 
 func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
@@ -63,26 +43,7 @@ func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
-	// Init a slice containing the paths to the tmpl files.
-	files := []string{
-		"./ui/html/pages/base.tmpl.html",
-		"./ui/html/partials/nav.tmpl.html",
-		"./ui/html/pages/view.tmpl.html",
-	}
-	// Parse the tmpl files.
-	ts, err := template.ParseFiles(files...)
-	if err != nil {
-		app.serverError(w, r, err)
-		return
-	}
-	// Create a templateData struct holding the snippet data.
-	data := templateData{Snippet: snippet}
-
-	// Execute the tmpl files.
-	err = ts.ExecuteTemplate(w, "base", data)
-	if err != nil {
-		app.serverError(w, r, err)
-	}
+	app.render(w, r, http.StatusOK, "view.tmpl.html", templateData{Snippet: snippet})
 }
 
 func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
