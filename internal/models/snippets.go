@@ -20,7 +20,7 @@ type SnippetModel struct {
 }
 
 // Insert will insert a new snippet into the database.
-func (m *SnippetModel) Insert(title, content, expires string) (int, error) {
+func (m *SnippetModel) Insert(title, content string, expires int) (int, error) {
 	// SQL statement for inserting a new record in the snippets table, and storing
 	// the resulting ID.
 
