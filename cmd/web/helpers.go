@@ -5,7 +5,16 @@ import (
 	"fmt"
 	"net/http"
 	"runtime/debug"
+	"time"
 )
+
+// newTemplateData function returns a templateData struct containing the
+// current year.
+func (app *application) newTemplateData(r *http.Request) templateData {
+	return templateData{
+		CurrentYear: time.Now().Year(),
+	}
+}
 
 func (app *application) render(w http.ResponseWriter, r *http.Request, status int, page string, td templateData) {
 	ts, ok := app.templateCache[page]
