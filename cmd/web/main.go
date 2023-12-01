@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"flag"
+	"github.com/go-playground/form/v4"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/tnaucoin/snippetbox/internal/models"
 	"html/template"
@@ -13,6 +14,7 @@ import (
 
 type application struct {
 	logger        *slog.Logger
+	formDecoder   *form.Decoder
 	snippets      *models.SnippetModel
 	templateCache map[string]*template.Template
 }
@@ -40,10 +42,11 @@ func main() {
 	}
 	// Defer a call to db.Close() so that the connection pool is closed before the
 	defer db.Close()
-
+	formDecoder := form.NewDecoder()
 	// Initialize a new instance of application containing the dependencies.
 	app := &application{
 		logger:        logger,
+		formDecoder:   formDecoder,
 		snippets:      &models.SnippetModel{DB: db},
 		templateCache: templateCache,
 	}
