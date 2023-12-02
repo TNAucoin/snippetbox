@@ -3,6 +3,8 @@ package main
 import (
 	"database/sql"
 	"flag"
+	"github.com/alexedwards/scs/mysqlstore"
+	"github.com/alexedwards/scs/v2"
 	"github.com/go-playground/form/v4"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/tnaucoin/snippetbox/internal/models"
@@ -10,13 +12,15 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"time"
 )
 
 type application struct {
-	logger        *slog.Logger
-	formDecoder   *form.Decoder
-	snippets      *models.SnippetModel
-	templateCache map[string]*template.Template
+	logger         *slog.Logger
+	formDecoder    *form.Decoder
+	snippets       *models.SnippetModel
+	templateCache  map[string]*template.Template
+	sessionManager *scs.SessionManager
 }
 
 func main() {
@@ -43,12 +47,17 @@ func main() {
 	// Defer a call to db.Close() so that the connection pool is closed before the
 	defer db.Close()
 	formDecoder := form.NewDecoder()
+	// Initialize a new session manager and configure the session lifetime.
+	sessionManager := scs.New()
+	sessionManager.Store = mysqlstore.New(db)
+	sessionManager.Lifetime = 12 * time.Hour
 	// Initialize a new instance of application containing the dependencies.
 	app := &application{
-		logger:        logger,
-		formDecoder:   formDecoder,
-		snippets:      &models.SnippetModel{DB: db},
-		templateCache: templateCache,
+		logger:         logger,
+		formDecoder:    formDecoder,
+		snippets:       &models.SnippetModel{DB: db},
+		templateCache:  templateCache,
+		sessionManager: sessionManager,
 	}
 
 	logger.Info("starting server", "addr", *addr)
